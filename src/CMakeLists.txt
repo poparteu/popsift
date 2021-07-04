@@ -23,6 +23,7 @@ CUDA_ADD_LIBRARY(popsift
         popsift/s_desc_grid.cu popsift/s_desc_grid.h
         popsift/s_desc_igrid.cu popsift/s_desc_igrid.h
         popsift/s_desc_notile.cu popsift/s_desc_notile.h
+        popsift/s_desc_vlfeat.cu popsift/s_desc_vlfeat.h
         popsift/s_desc_norm_rs.h
         popsift/s_desc_norm_l2.h
         popsift/s_desc_normalize.h
@@ -147,5 +148,9 @@ export(TARGETS popsift FILE "${popsift_generated_dir}/${popsift_targets_export_n
 
 if(PopSift_BUILD_EXAMPLES)
   add_subdirectory(application)
+endif()
+
+if(PopSift_USE_TEST_CMD)
+  add_subdirectory(compareSiftFiles)
 endif()
 
