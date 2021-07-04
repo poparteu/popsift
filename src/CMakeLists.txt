@@ -23,10 +23,12 @@ CUDA_ADD_LIBRARY(popsift
         popsift/s_desc_grid.cu popsift/s_desc_grid.h
         popsift/s_desc_igrid.cu popsift/s_desc_igrid.h
         popsift/s_desc_notile.cu popsift/s_desc_notile.h
+        popsift/s_desc_vlfeat.cu popsift/s_desc_vlfeat.h
         popsift/s_desc_norm_rs.h
         popsift/s_desc_norm_l2.h
         popsift/s_desc_normalize.h
         popsift/s_gradiant.h
+	popsift/s_gradiant_cuda9plus.h
         popsift/s_solve.h
         popsift/common/assist.cu popsift/common/assist.h
         popsift/common/clamp.h
