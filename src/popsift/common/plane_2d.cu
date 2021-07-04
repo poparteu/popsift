@@ -5,9 +5,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
+#include "assist.h"
+#include "debug_macros.h"
+#include "plane_2d.h"
+
+#include <cuda_runtime.h>
+
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
-#include <string.h>
-#include <stdlib.h>
 #ifndef _WIN32
 #include <unistd.h>
 #else
@@ -17,10 +24,7 @@
 #include <malloc.h>
 #endif
 
-#include <cuda_runtime.h>
 
-#include "plane_2d.h"
-#include "debug_macros.h"
 
 using namespace std;
 
@@ -46,18 +50,6 @@ void PlaneBase::freeDev2D( void* data )
 }
 
 __host__
-static long GetPageSize()
-{
-#ifdef _WIN32
-    SYSTEM_INFO si;
-    GetSystemInfo(&si);
-    return si.dwPageSize;
-#else
-    return sysconf(_SC_PAGESIZE);
-#endif
-}
-
-__host__
 void* PlaneBase::allocHost2D( int w, int h, int elemSize, PlaneMapMode m )
 {
     int sz = w * h * elemSize;
@@ -78,15 +70,9 @@ void* PlaneBase::allocHost2D( int w, int h, int elemSize, PlaneMapMode m )
              << "    Cause: " << buf << endl;
         exit( -1 );
     } else if( m == PageAligned ) {
-        void* ptr;
-
-#ifdef _WIN32
-        ptr = _aligned_malloc(sz, GetPageSize());
-        if (ptr) return ptr;
-#else
-        int retval = posix_memalign( &ptr, GetPageSize(), sz );
-        if( retval == 0 ) return ptr;
-#endif
+        void* ptr = memalign(getPageSize(), sz);
+        if(ptr)
+            return ptr;
 
 #ifdef _GNU_SOURCE
         char b[100];
@@ -118,20 +104,16 @@ void PlaneBase::freeHost2D( void* data, PlaneMapMode m )
 {
     if (!data)
         return;
-    if (m == CudaAllocated) {
+    else if (m == CudaAllocated) {
         cudaFreeHost(data);
         return;
     }
-    if (m == Unaligned) {
+    else if (m == Unaligned) {
         free(data);
         return;
     }
-    if (m == PageAligned) {
-#ifdef _WIN32
-	_aligned_free(data);
-#else
-	free(data);
-#endif
+    else if (m == PageAligned) {
+        memalign_free( data );
         return;
     }
     assert(!"Invalid PlaneMapMode");
